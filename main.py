@@ -15,7 +15,10 @@ def main(args) -> None:
     file_path = args[1] if len(args) == 2 else None
     tl = TaskList(file_path)
     print(f"Loaded {len(tl.tasks)} tasks from {tl.file_path}.")
-    InputHandler(tl).handle_input_loop()
+    input_handler = InputHandler(tl)
+    while True:
+        print("\n".join(input_handler.options_str))
+        input_handler.handle_input(input(">>> "))
 
 
 if __name__ == "__main__":
