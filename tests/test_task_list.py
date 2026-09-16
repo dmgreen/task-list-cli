@@ -14,4 +14,7 @@ def test_task_list_renders_tasks_in_order(tmp_path):
     task_list.add_task(Task("First task"))
     task_list.add_task(Task("Second task"))
 
-    assert str(task_list) == "1. Task: First task\n2. Task: Second task"
+    assert str(task_list) == (
+        "1. Task: First task (Due: None, Completed: False)\n"
+        "2. Task: Second task (Due: None, Completed: False)"
+    )

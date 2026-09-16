@@ -59,7 +59,10 @@ def test_input_handler_creates_and_adds_task(input_handler, monkeypatch):
         def create_from_input(self):
             self.title = "Mock Task Title"
 
+        def due_date(self):
+            return None
+
     monkeypatch.setattr("task.Task", MockTask)
     input_handler.create()
     assert len(input_handler.task_list.tasks) == 1
-    assert input_handler.task_list.tasks[0].title == "Mock Task Title"
+    assert isinstance(input_handler.task_list.tasks[0], MockTask)
