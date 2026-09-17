@@ -54,6 +54,6 @@ class Task:
     def __str__(self):
         due_date = self._due_date.isoformat() if self._due_date else None
         return (
-            f"Task: {self._title} (Due: {due_date}, "
+            f"{self._title} (Due: {due_date}, "
             f"Completed: {self._completed})"
         )

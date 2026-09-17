@@ -1,20 +1,13 @@
 from datetime import date
-
 import pytest
-
 from task import Task
 
 
-def test_task_stores_title():
+def test_task_stores_and_writes_title():
     task = Task("Write tests")
 
     assert task.title == "Write tests"
-
-
-def test_task_string_includes_title():
-    task = Task("Write tests")
-
-    assert str(task) == "Task: Write tests (Due: None, Completed: False)"
+    assert str(task) == "Write tests (Due: None, Completed: False)"
 
 
 def test_task_defaults_metadata():
