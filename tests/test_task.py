@@ -32,6 +32,13 @@ def test_task_stores_and_updates_metadata():
     assert task.completed is False
 
 
+def test_task_requires_title_from_user_input(monkeypatch):
+    monkeypatch.setattr("builtins.input", lambda _: "")
+    task = Task()
+    with pytest.raises(ValueError):
+        task.create_from_input()
+
+
 def test_task_create_from_input_collects_optional_due_date(monkeypatch):
     answers = iter(["Write tests", "2026-09-30"])
     monkeypatch.setattr("builtins.input", lambda _: next(answers))

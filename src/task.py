@@ -8,7 +8,10 @@ class Task:
         self.completed = completed
 
     def create_from_input(self):
-        self.title = input("Enter task title: ")
+        title = input("Enter task title: ")
+        if not title:
+            raise ValueError("Task title is required")
+        self.title = title
         due_date = input("Enter due date (YYYY-MM-DD, optional): ")
         self.due_date = due_date or None
 

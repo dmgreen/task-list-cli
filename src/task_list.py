@@ -1,3 +1,4 @@
+from datetime import date
 import os
 
 
@@ -14,6 +15,7 @@ class TaskList:
 
     def add_task(self, task):
         self._tasks.append(task)
+        self._tasks.sort(key=lambda t: (t.due_date or date.max, t.title))
 
     def __str__(self):
         if len(self._tasks) == 0:

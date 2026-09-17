@@ -30,10 +30,15 @@ class InputHandler:
 
     def create(self):
         new_task = task.Task()
-        new_task.create_from_input()
+        try:
+            new_task.create_from_input()
+        except ValueError as e:
+            print(f"Error creating task: {e}")
+            return
         self.task_list.add_task(new_task)
 
     def read(self):
+        # TODO: remove this as a user option. Display tasks after each action.
         print("Current tasks:")
         print(self.task_list)
 
