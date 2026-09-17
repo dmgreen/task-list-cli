@@ -61,6 +61,31 @@ def test_task_create_from_input_allows_blank_due_date(monkeypatch):
     assert task.due_date is None
 
 
+def test_task_update_changes_each_property():
+    task = Task("Write tests", "2026-09-30", False)
+
+    task.update(title="Review tests", due_date="2026-10-01", completed=True)
+
+    assert task.title == "Review tests"
+    assert task.due_date == date(2026, 10, 1)
+    assert task.completed is True
+
+
+def test_task_update_can_clear_due_date():
+    task = Task("Write tests", "2026-09-30", False)
+
+    task.update(due_date=None)
+
+    assert task.due_date is None
+
+
+def test_task_update_requires_title_if_provided():
+    task = Task("Write tests", "2026-09-30", False)
+
+    with pytest.raises(ValueError):
+        task.update(title="")
+
+
 def test_task_rejects_invalid_due_date():
     with pytest.raises(ValueError):
         Task(due_date="30-09-2026")

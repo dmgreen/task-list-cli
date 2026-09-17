@@ -43,7 +43,50 @@ class InputHandler:
         print(self.task_list)
 
     def update(self):
-        print("Selected update. Heading back to loop.")
+        if not self.task_list.tasks:
+            print("No tasks available to update.")
+            return
+
+        print("Current tasks:")
+        print(self.task_list)
+
+        try:
+            task_number = int(input("Enter task number to update: ").strip())
+            task = self.task_list.get_task(task_number)
+
+            property_choice = input(
+                "Update [T]itle, [D]ue date, [C]ompleted, or [X]ancel: "
+            ).strip().upper()
+
+            if property_choice == "X":
+                return
+
+            if property_choice == "T":
+                title = input("Enter new title: ")
+                task.update(title=title)
+            elif property_choice == "D":
+                due_date = input("Enter new due date (YYYY-MM-DD, optional): ")
+                task.update(due_date=due_date or None)
+            elif property_choice == "C":
+                completed = input("Completed (y/n): ")
+                completion_values = {
+                    "Y": True,
+                    "N": False,
+                }
+                try:
+                    completed = completion_values[completed.strip().upper()]
+                except KeyError as error:
+                    raise ValueError(
+                        "completion must be y or n"
+                    ) from error
+                task.update(completed=completed)
+            else:
+                raise ValueError("invalid property choice")
+        except (IndexError, TypeError, ValueError) as error:
+            print(f"Error updating task: {error}")
+        else:
+            self.task_list.sort()
+            print("Task updated.")
 
     def delete(self):
         print("Selected delete. Heading back to loop.")

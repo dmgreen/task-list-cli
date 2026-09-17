@@ -13,9 +13,19 @@ class TaskList:
     def tasks(self):
         return self._tasks
 
+    def sort(self):
+        self._tasks.sort(key=lambda t: (t.due_date or date.max, t.title))
+
     def add_task(self, task):
         self._tasks.append(task)
-        self._tasks.sort(key=lambda t: (t.due_date or date.max, t.title))
+        self.sort()
+
+    def get_task(self, task_number):
+        if not isinstance(task_number, int) or isinstance(task_number, bool):
+            raise TypeError("task number must be an integer")
+        if task_number < 1 or task_number > len(self._tasks):
+            raise IndexError("task number is out of range")
+        return self._tasks[task_number - 1]
 
     def __str__(self):
         if len(self._tasks) == 0:
