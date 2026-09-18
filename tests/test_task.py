@@ -11,7 +11,7 @@ def test_task_stores_and_writes_title():
 
 
 def test_task_defaults_metadata():
-    task = Task()
+    task = Task("Write tests")
 
     assert task.due_date is None
     assert task.completed is False
@@ -32,33 +32,20 @@ def test_task_stores_and_updates_metadata():
     assert task.completed is False
 
 
-def test_task_requires_title_from_user_input(monkeypatch):
-    monkeypatch.setattr("builtins.input", lambda _: "")
-    task = Task()
+def test_task_rejects_blank_title():
     with pytest.raises(ValueError):
-        task.create_from_input()
+        Task(" ")
 
 
-def test_task_create_from_input_collects_optional_due_date(monkeypatch):
-    answers = iter(["Write tests", "2026-09-30"])
-    monkeypatch.setattr("builtins.input", lambda _: next(answers))
+def test_task_requires_title():
+    with pytest.raises(TypeError):
+        Task()
 
-    task = Task()
-    task.create_from_input()
+
+def test_task_strips_title():
+    task = Task("  Write tests  ")
 
     assert task.title == "Write tests"
-    assert task.due_date == date(2026, 9, 30)
-    assert task.completed is False
-
-
-def test_task_create_from_input_allows_blank_due_date(monkeypatch):
-    answers = iter(["Write tests", ""])
-    monkeypatch.setattr("builtins.input", lambda _: next(answers))
-
-    task = Task()
-    task.create_from_input()
-
-    assert task.due_date is None
 
 
 def test_task_update_changes_each_property():
@@ -83,26 +70,32 @@ def test_task_update_requires_title_if_provided():
     task = Task("Write tests", "2026-09-30", False)
 
     with pytest.raises(ValueError):
-        task.update(title="")
+        task.update(title=" ")
+
+    assert task.title == "Write tests"
 
 
-def test_task_rejects_invalid_due_date():
-    with pytest.raises(ValueError):
-        Task(due_date="30-09-2026")
-
-    with pytest.raises(ValueError):
-        Task(due_date="2026/09/30")
+def test_task_update_is_atomic_when_validation_fails():
+    task = Task("Write tests", "2026-09-30", False)
 
     with pytest.raises(ValueError):
-        Task(due_date="2026-09-31")
+        task.update(title="Review tests", due_date="2026-09-31")
 
+    assert task.title == "Write tests"
+    assert task.due_date == date(2026, 9, 30)
+    assert task.completed is False
+
+
+@pytest.mark.parametrize(
+        "bad_date",
+        ["30-09-2026", "2026/09/30", "2026-09-31", "2026-09-30T12:00:00"]
+        )
+def test_task_rejects_invalid_due_date(bad_date):
     with pytest.raises(ValueError):
-        Task(due_date="2026-09-30T12:00:00")
+        Task("Write tests", due_date=bad_date)
 
 
-def test_task_rejects_non_boolean_completion():
+@pytest.mark.parametrize("bad_bool", [1, 0])
+def test_task_rejects_non_boolean_completion(bad_bool):
     with pytest.raises(TypeError):
-        Task(completed=1)
-
-    with pytest.raises(TypeError):
-        Task(completed=0)
+        Task(completed=bad_bool)

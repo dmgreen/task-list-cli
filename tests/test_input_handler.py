@@ -197,8 +197,29 @@ def test_input_handler_creates_and_adds_task(input_handler, monkeypatch):
     new_task = Mock()
     task_constructor.return_value = new_task
     monkeypatch.setattr("task.Task", task_constructor)
+    answers = iter(["Write tests", "2026-09-30"])
+    monkeypatch.setattr("builtins.input", lambda _: next(answers))
 
     input_handler.create()
 
-    new_task.create_from_input.assert_called_once()
+    task_constructor.assert_called_once_with(
+        title="Write tests", due_date="2026-09-30"
+    )
     input_handler.task_list.add_task.assert_called_once_with(new_task)
+
+
+@pytest.mark.parametrize(
+    "answers",
+    [
+        ["", "2026-09-30"],
+        ["Write tests", "30-09-2026"],
+    ]
+)
+def test_input_handler_does_not_add_task_for_invalid_creation_input(
+    input_handler, monkeypatch, answers
+):
+    monkeypatch.setattr("builtins.input", lambda _: answers.pop(0))
+
+    input_handler.create()
+
+    input_handler.task_list.add_task.assert_not_called()

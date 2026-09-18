@@ -5,22 +5,13 @@ _UNSET = object()
 
 class Task:
     def __init__(self, title=None, due_date=None, completed=False):
-        self._title = title
+        self._title = self._normalize_title(title)
         self._due_date = self._normalize_due_date(due_date)
         self.completed = completed
 
-    # TODO: refactor to move input handling to InputHandler class
-    def create_from_input(self):
-        title = input("Enter task title: ")
-        if not title:
-            raise ValueError("Task title is required")
-        self.title = title
-        due_date = input("Enter due date (YYYY-MM-DD, optional): ")
-        self.due_date = due_date or None
-
     def update(self, *, title=_UNSET, due_date=_UNSET, completed=_UNSET):
-        if title is not _UNSET and not title:
-            raise ValueError("Task title is required")
+        if title is not _UNSET:
+            title = self._normalize_title(title)
         if due_date is not _UNSET:
             due_date = self._normalize_due_date(due_date)
         if completed is not _UNSET and not isinstance(completed, bool):
@@ -39,7 +30,7 @@ class Task:
 
     @title.setter
     def title(self, title):
-        self._title = title
+        self._title = self._normalize_title(title)
 
     @property
     def due_date(self):
@@ -58,6 +49,15 @@ class Task:
         if not isinstance(completed, bool):
             raise TypeError("completed must be a boolean")
         self._completed = completed
+
+    @staticmethod
+    def _normalize_title(title):
+        if not isinstance(title, str):
+            raise TypeError("title must be a string")
+        title = title.strip()
+        if not title:
+            raise ValueError("Task title is required")
+        return title
 
     @staticmethod
     def _normalize_due_date(due_date):

@@ -28,12 +28,37 @@ class InputHandler:
 
         getattr(self, self.cmd_dict[cmd[0]])()
 
-    def create(self):
-        new_task = task.Task()
+    @staticmethod
+    def _prompt_title(prompt):
+        title = input(prompt).strip()
+        if not title:
+            raise ValueError("Task title is required")
+        return title
+
+    @staticmethod
+    def _prompt_due_date(prompt):
+        return input(prompt).strip() or None
+
+    @staticmethod
+    def _prompt_completion(prompt):
+        completion_values = {
+            "Y": True,
+            "N": False,
+        }
         try:
-            new_task.create_from_input()
-        except ValueError as e:
-            print(f"Error creating task: {e}")
+            return completion_values[input(prompt).strip().upper()]
+        except KeyError as error:
+            raise ValueError("completion must be y or n") from error
+
+    def create(self):
+        try:
+            title = self._prompt_title("Enter task title: ")
+            due_date = self._prompt_due_date(
+                "Enter due date (YYYY-MM-DD, optional): "
+            )
+            new_task = task.Task(title=title, due_date=due_date)
+        except (TypeError, ValueError) as error:
+            print(f"Error creating task: {error}")
             return
         self.task_list.add_task(new_task)
 
@@ -62,23 +87,14 @@ class InputHandler:
                 return
 
             if property_choice == "T":
-                title = input("Enter new title: ")
-                task.update(title=title)
+                task.update(title=self._prompt_title("Enter new title: "))
             elif property_choice == "D":
-                due_date = input("Enter new due date (YYYY-MM-DD, optional): ")
-                task.update(due_date=due_date or None)
+                due_date = self._prompt_due_date(
+                    "Enter new due date (YYYY-MM-DD, optional): "
+                )
+                task.update(due_date=due_date)
             elif property_choice == "C":
-                completed = input("Completed (y/n): ")
-                completion_values = {
-                    "Y": True,
-                    "N": False,
-                }
-                try:
-                    completed = completion_values[completed.strip().upper()]
-                except KeyError as error:
-                    raise ValueError(
-                        "completion must be y or n"
-                    ) from error
+                completed = self._prompt_completion("Completed (y/n): ")
                 task.update(completed=completed)
             else:
                 raise ValueError("invalid property choice")
