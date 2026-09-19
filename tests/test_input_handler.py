@@ -1,6 +1,8 @@
-from input_handler import InputHandler
-import pytest
 from unittest.mock import Mock
+
+import pytest
+
+from input_handler import InputHandler
 
 
 @pytest.fixture
