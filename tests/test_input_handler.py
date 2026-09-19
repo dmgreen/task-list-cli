@@ -20,14 +20,10 @@ def input_handler(task_list):
 
 
 def test_handle_input_with_valid_input_can_quit(input_handler):
-    with pytest.raises(SystemExit):
-        input_handler.handle_input("Q")
-    with pytest.raises(SystemExit):
-        input_handler.handle_input("q")
-    with pytest.raises(SystemExit):
-        input_handler.handle_input("Quit")
-    with pytest.raises(SystemExit):
-        input_handler.handle_input("quit")
+    assert input_handler.handle_input("Q") is True
+    assert input_handler.handle_input("q") is True
+    assert input_handler.handle_input("Quit") is True
+    assert input_handler.handle_input("quit") is True
 
 
 def test_handle_input_with_valid_input_invokes_create(input_handler,

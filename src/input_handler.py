@@ -26,7 +26,7 @@ class InputHandler:
             print("Invalid choice. Please try again.")
             return
 
-        getattr(self, self.cmd_dict[cmd[0]])()
+        return getattr(self, self.cmd_dict[cmd[0]])()
 
     @staticmethod
     def _prompt_title(prompt):
@@ -132,4 +132,4 @@ class InputHandler:
 
     def quit(self):
         print("Exiting the application.")
-        exit(0)
+        return True
