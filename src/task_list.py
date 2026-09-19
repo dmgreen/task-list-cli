@@ -27,6 +27,10 @@ class TaskList:
             raise IndexError("task number is out of range")
         return self._tasks[task_number - 1]
 
+    def delete_task(self, task_number):
+        task = self.get_task(task_number)
+        self._tasks.remove(task)
+
     def __str__(self):
         if len(self._tasks) == 0:
             return "No tasks available."

@@ -105,7 +105,30 @@ class InputHandler:
             print("Task updated.")
 
     def delete(self):
-        print("Selected delete. Heading back to loop.")
+        if not self.task_list.tasks:
+            print("No tasks available to delete.")
+            return
+
+        print("Current tasks:")
+        print(self.task_list)
+
+        try:
+            task_number = int(input("Enter task number to delete: ").strip())
+            selected_task = self.task_list.get_task(task_number)
+            confirmation = input(
+                f'Delete "{selected_task.title}"? [Y]es/[N]o/[X]ancel: '
+            ).strip().upper()
+
+            if confirmation in ("N", "X"):
+                return
+            if confirmation != "Y":
+                raise ValueError("invalid confirmation choice")
+
+            self.task_list.delete_task(task_number)
+        except (IndexError, TypeError, ValueError) as error:
+            print(f"Error deleting task: {error}")
+        else:
+            print("Task deleted.")
 
     def quit(self):
         print("Exiting the application.")

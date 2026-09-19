@@ -52,6 +52,17 @@ def test_handle_input_with_valid_input_invokes_update(input_handler,
     assert mock_update.call_count == 4
 
 
+def test_handle_input_with_valid_input_invokes_delete(input_handler,
+                                                      monkeypatch):
+    mock_delete = Mock()
+    monkeypatch.setattr("input_handler.InputHandler.delete", mock_delete)
+    input_handler.handle_input("D")
+    input_handler.handle_input("d")
+    input_handler.handle_input("Delete")
+    input_handler.handle_input("delete")
+    assert mock_delete.call_count == 4
+
+
 def test_update_on_invalid_task_number_catches_error(monkeypatch):
     task_list = Mock()
     task_list.get_task.side_effect = Mock(side_effect=IndexError)
@@ -192,6 +203,86 @@ def test_update_can_cancel(monkeypatch):
 
     task_list.get_task.assert_called_once_with(1)
     task.update.assert_not_called()
+
+
+def test_delete_can_delete_selected_task(monkeypatch):
+    task_list = Mock()
+    task = Mock(title="First task")
+    task_list.tasks = [task]
+    task_list.get_task.return_value = task
+
+    input_handler = InputHandler(task_list)
+    answers = iter(["1", "Y"])
+    monkeypatch.setattr("builtins.input", lambda _: next(answers))
+
+    input_handler.delete()
+
+    task_list.get_task.assert_called_once_with(1)
+    task_list.delete_task.assert_called_once_with(1)
+
+
+@pytest.mark.parametrize("confirmation", ["N", "n", "X", "x"])
+def test_delete_can_cancel(monkeypatch, confirmation):
+    task_list = Mock()
+    task = Mock(title="First task")
+    task_list.tasks = [task]
+    task_list.get_task.return_value = task
+
+    input_handler = InputHandler(task_list)
+    answers = iter(["1", confirmation])
+    monkeypatch.setattr("builtins.input", lambda _: next(answers))
+
+    input_handler.delete()
+
+    task_list.get_task.assert_called_once_with(1)
+    task_list.delete_task.assert_not_called()
+
+
+def test_delete_with_no_tasks_does_not_prompt(monkeypatch):
+    task_list = Mock()
+    task_list.tasks = []
+    input_handler = InputHandler(task_list)
+    prompt = Mock(side_effect=AssertionError("input should not be called"))
+    monkeypatch.setattr("builtins.input", prompt)
+
+    input_handler.delete()
+
+    prompt.assert_not_called()
+    task_list.delete_task.assert_not_called()
+
+
+@pytest.mark.parametrize("task_number", ["0", "2", "not a number"])
+def test_delete_with_invalid_task_number_does_not_delete(
+    monkeypatch, task_number
+):
+    task_list = Mock()
+    task = Mock(title="First task")
+    task_list.tasks = [task]
+    task_list.get_task.side_effect = IndexError
+    input_handler = InputHandler(task_list)
+    monkeypatch.setattr("builtins.input", lambda _: task_number)
+
+    input_handler.delete()
+
+    if task_number.isdigit():
+        task_list.get_task.assert_called_once_with(int(task_number))
+    else:
+        task_list.get_task.assert_not_called()
+    task_list.delete_task.assert_not_called()
+
+
+def test_delete_with_invalid_confirmation_does_not_delete(monkeypatch):
+    task_list = Mock()
+    task = Mock(title="First task")
+    task_list.tasks = [task]
+    task_list.get_task.return_value = task
+    input_handler = InputHandler(task_list)
+    answers = iter(["1", "maybe"])
+    monkeypatch.setattr("builtins.input", lambda _: next(answers))
+
+    input_handler.delete()
+
+    task_list.delete_task.assert_not_called()
 
 
 def test_input_handler_creates_and_adds_task(input_handler, monkeypatch):

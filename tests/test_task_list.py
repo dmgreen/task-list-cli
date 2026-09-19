@@ -40,6 +40,25 @@ def test_get_task_rejects_invalid_task_number(tmp_path, task_number):
         task_list.get_task(task_number)
 
 
+def test_delete_task_removes_selected_task(tmp_path):
+    task_list = TaskList(tmp_path / "tasks.json")
+    task_list.add_task(Task("First task"))
+    task_list.add_task(Task("Second task"))
+
+    task_list.delete_task(1)
+
+    assert [task.title for task in task_list.tasks] == ["Second task"]
+
+
+@pytest.mark.parametrize("task_number", [0, 2])
+def test_delete_task_rejects_invalid_task_number(tmp_path, task_number):
+    task_list = TaskList(tmp_path / "tasks.json")
+    task_list.add_task(Task("First task"))
+
+    with pytest.raises(IndexError):
+        task_list.delete_task(task_number)
+
+
 def test_task_list_sorts_tasks(tmp_path):
     task_list = TaskList(tmp_path / "tasks.json")
     first_task = Task("First task", "2026-09-20")
