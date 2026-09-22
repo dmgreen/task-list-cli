@@ -6,6 +6,44 @@ from task import Task
 from task_list import TaskFileError, TaskList
 
 
+def test_default_task_file_uses_user_data_directory(tmp_path, monkeypatch):
+    monkeypatch.setattr("task_list.user_data_dir", lambda _: str(tmp_path))
+
+    task_list = TaskList()
+
+    assert task_list.file_path == tmp_path / "tasks.json"
+
+
+def test_default_task_file_is_not_created_in_current_directory(
+    tmp_path, monkeypatch
+):
+    user_data_path = tmp_path / "user-data"
+    working_directory = tmp_path / "working-directory"
+    working_directory.mkdir()
+    monkeypatch.setattr(
+        "task_list.user_data_dir", lambda _: str(user_data_path)
+    )
+    monkeypatch.chdir(working_directory)
+
+    task_list = TaskList()
+    task_list.add_task(Task("First task"))
+    task_list.save()
+
+    assert (user_data_path / "tasks.json").exists()
+    assert not (working_directory / "tasks.json").exists()
+
+
+def test_explicit_task_file_overrides_default(tmp_path, monkeypatch):
+    monkeypatch.setattr(
+        "task_list.user_data_dir", lambda _: str(tmp_path / "user-data")
+    )
+    explicit_path = tmp_path / "custom" / "tasks.json"
+
+    task_list = TaskList(explicit_path)
+
+    assert task_list.file_path == explicit_path
+
+
 def test_empty_task_list_has_no_tasks_message(tmp_path):
     task_list = TaskList(tmp_path / "tasks.json")
 

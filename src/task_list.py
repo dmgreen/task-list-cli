@@ -3,7 +3,14 @@ from datetime import date
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Union, cast
 
+from platformdirs import user_data_dir
+
 from task import Task
+
+
+def default_task_file() -> Path:
+    """Return the platform-specific default task file path."""
+    return Path(user_data_dir("task-list-cli")) / "tasks.json"
 
 
 class TaskFileError(Exception):
@@ -12,7 +19,9 @@ class TaskFileError(Exception):
 
 class TaskList:
     def __init__(self, file_path: Optional[Union[str, Path]] = None) -> None:
-        self.file_path = Path(file_path if file_path else "tasks.json")
+        self.file_path = (
+            Path(file_path) if file_path is not None else default_task_file()
+        )
         self._tasks: List[Task] = []
         self._load()
 

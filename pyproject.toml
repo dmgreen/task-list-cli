@@ -12,7 +12,7 @@ license = { text = "MIT" }
 authors = [
     { name = "Dalton Green", email = "dmgreen93@gmail.com" },
 ]
-dependencies = []
+dependencies = ["platformdirs>=4.0"]
 
 [project.optional-dependencies]
 dev = [

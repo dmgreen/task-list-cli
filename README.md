@@ -9,21 +9,23 @@ A small interactive command-line task list application written in Python. Tasks 
 - Update a task's title, due date, or completion status
 - Delete tasks with confirmation
 - Sort tasks by due date and then title
-- Use the default `tasks.json` file or provide a custom file path
+- Use a per-user default task file or provide a custom file path
 
 ## Requirements
 
 - Python 3.9 or newer
 
-The application has no runtime dependencies.
+The application uses `platformdirs` to choose a per-user data directory for its default task file.
 
 ## Usage
 
-Run the application with the default `tasks.json` file:
+Run the application with the default task file. It is stored in the operating system's per-user application-data directory, so running the command from a workspace does not create a `tasks.json` file there:
 
 ```text
 python main.py
 ```
+
+The default location is typically `%APPDATA%\task-list-cli\tasks.json` on Windows, `~/Library/Application Support/task-list-cli/tasks.json` on macOS, and `~/.local/share/task-list-cli/tasks.json` on Linux.
 
 Use a different JSON file by passing its path:
 
