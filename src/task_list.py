@@ -1,6 +1,7 @@
 import json
 from datetime import date
 from pathlib import Path
+from typing import Any, Dict, List, Optional, Union, cast
 
 from task import Task
 
@@ -10,19 +11,19 @@ class TaskFileError(Exception):
 
 
 class TaskList:
-    def __init__(self, file_path=None):
+    def __init__(self, file_path: Optional[Union[str, Path]] = None) -> None:
         self.file_path = Path(file_path if file_path else "tasks.json")
-        self._tasks = []
+        self._tasks: List[Task] = []
         self._load()
 
     @property
-    def tasks(self):
+    def tasks(self) -> List[Task]:
         return self._tasks
 
-    def sort(self):
+    def sort(self) -> None:
         self._tasks.sort(key=lambda t: (t.due_date or date.max, t.title))
 
-    def _load(self):
+    def _load(self) -> None:
         if not self.file_path.exists():
             return
 
@@ -45,16 +46,17 @@ class TaskList:
         self.sort()
 
     @staticmethod
-    def _task_from_record(record):
+    def _task_from_record(record: object) -> Task:
         if not isinstance(record, dict):
             raise TypeError("each task must be a JSON object")
+        record = cast(Dict[str, Any], record)
         if set(record) != {"title", "due_date", "completed"}:
             raise ValueError(
                 "each task must contain title, due_date, and completed"
             )
         return Task(**record)
 
-    def save(self):
+    def save(self) -> None:
         if not self.file_path.exists() and not self._tasks:
             return
 
@@ -77,22 +79,22 @@ class TaskList:
             message = f"could not save {self.file_path}: {error}"
             raise TaskFileError(message) from error
 
-    def add_task(self, task):
+    def add_task(self, task: Task) -> None:
         self._tasks.append(task)
         self.sort()
 
-    def get_task(self, task_number):
+    def get_task(self, task_number: int) -> Task:
         if not isinstance(task_number, int) or isinstance(task_number, bool):
             raise TypeError("task number must be an integer")
         if task_number < 1 or task_number > len(self._tasks):
             raise IndexError("task number is out of range")
         return self._tasks[task_number - 1]
 
-    def delete_task(self, task_number):
+    def delete_task(self, task_number: int) -> None:
         task = self.get_task(task_number)
         self._tasks.remove(task)
 
-    def __str__(self):
+    def __str__(self) -> str:
         if len(self._tasks) == 0:
             return "No tasks available."
         return "\n".join([

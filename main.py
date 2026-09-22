@@ -1,12 +1,13 @@
 """Command-line entry point for the task list application."""
 
 from sys import argv
+from typing import Sequence
 
 from input_handler import InputHandler
 from task_list import TaskFileError, TaskList
 
 
-def main(args) -> int:
+def main(args: Sequence[str]) -> int:
     """Run the task list CLI."""
     print("Task List CLI")
     if len(args) > 2:

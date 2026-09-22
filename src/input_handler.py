@@ -1,4 +1,9 @@
+from typing import TYPE_CHECKING, Optional
+
 import task
+
+if TYPE_CHECKING:
+    from task_list import TaskList
 
 
 class InputHandler:
@@ -17,10 +22,10 @@ class InputHandler:
         "Q": "quit"
     }
 
-    def __init__(self, task_list):
+    def __init__(self, task_list: "TaskList") -> None:
         self.task_list = task_list
 
-    def handle_input(self, cmd):
+    def handle_input(self, cmd: str) -> Optional[bool]:
         cmd = cmd.strip().upper()
         if len(cmd) == 0 or cmd[0] not in self.cmd_dict:
             print("Invalid choice. Please try again.")
@@ -29,18 +34,18 @@ class InputHandler:
         return getattr(self, self.cmd_dict[cmd[0]])()
 
     @staticmethod
-    def _prompt_title(prompt):
+    def _prompt_title(prompt: str) -> str:
         title = input(prompt).strip()
         if not title:
             raise ValueError("Task title is required")
         return title
 
     @staticmethod
-    def _prompt_due_date(prompt):
+    def _prompt_due_date(prompt: str) -> Optional[str]:
         return input(prompt).strip() or None
 
     @staticmethod
-    def _prompt_completion(prompt):
+    def _prompt_completion(prompt: str) -> bool:
         completion_values = {
             "Y": True,
             "N": False,
@@ -50,7 +55,7 @@ class InputHandler:
         except KeyError as error:
             raise ValueError("completion must be y or n") from error
 
-    def create(self):
+    def create(self) -> None:
         try:
             title = self._prompt_title("Enter task title: ")
             due_date = self._prompt_due_date(
@@ -62,12 +67,12 @@ class InputHandler:
             return
         self.task_list.add_task(new_task)
 
-    def read(self):
+    def read(self) -> None:
         # TODO: remove this as a user option. Display tasks after each action.
         print("Current tasks:")
         print(self.task_list)
 
-    def update(self):
+    def update(self) -> None:
         if not self.task_list.tasks:
             print("No tasks available to update.")
             return
@@ -104,7 +109,7 @@ class InputHandler:
             self.task_list.sort()
             print("Task updated.")
 
-    def delete(self):
+    def delete(self) -> None:
         if not self.task_list.tasks:
             print("No tasks available to delete.")
             return
@@ -130,6 +135,6 @@ class InputHandler:
         else:
             print("Task deleted.")
 
-    def quit(self):
+    def quit(self) -> bool:
         print("Exiting the application.")
         return True

@@ -1,15 +1,37 @@
 from datetime import date
+from typing import Optional, Union, overload
 
 _UNSET = object()
 
 
 class Task:
-    def __init__(self, title=None, due_date=None, completed=False):
+    def __init__(
+        self,
+        title: Optional[str] = None,
+        due_date: Optional[Union[date, str]] = None,
+        completed: bool = False,
+    ) -> None:
         self._title = self._normalize_title(title)
         self._due_date = self._normalize_due_date(due_date)
         self.completed = completed
 
-    def update(self, *, title=_UNSET, due_date=_UNSET, completed=_UNSET):
+    @overload
+    def update(
+        self,
+        *,
+        title: str = ...,
+        due_date: Optional[Union[date, str]] = ...,
+        completed: bool = ...,
+    ) -> None:
+        ...
+
+    def update(
+        self,
+        *,
+        title: object = _UNSET,
+        due_date: object = _UNSET,
+        completed: object = _UNSET,
+    ) -> None:
         if title is not _UNSET:
             title = self._normalize_title(title)
         if due_date is not _UNSET:
@@ -25,33 +47,33 @@ class Task:
             self.completed = completed
 
     @property
-    def title(self):
+    def title(self) -> str:
         return self._title
 
     @title.setter
-    def title(self, title):
+    def title(self, title: Optional[str]) -> None:
         self._title = self._normalize_title(title)
 
     @property
-    def due_date(self):
+    def due_date(self) -> Optional[date]:
         return self._due_date
 
     @due_date.setter
-    def due_date(self, due_date):
+    def due_date(self, due_date: Optional[Union[date, str]]) -> None:
         self._due_date = self._normalize_due_date(due_date)
 
     @property
-    def completed(self):
+    def completed(self) -> bool:
         return self._completed
 
     @completed.setter
-    def completed(self, completed):
+    def completed(self, completed: bool) -> None:
         if not isinstance(completed, bool):
             raise TypeError("completed must be a boolean")
         self._completed = completed
 
     @staticmethod
-    def _normalize_title(title):
+    def _normalize_title(title: object) -> str:
         if not isinstance(title, str):
             raise TypeError("title must be a string")
         title = title.strip()
@@ -60,7 +82,9 @@ class Task:
         return title
 
     @staticmethod
-    def _normalize_due_date(due_date):
+    def _normalize_due_date(
+        due_date: object,
+    ) -> Optional[date]:
         if due_date is None or isinstance(due_date, date):
             return due_date
         if isinstance(due_date, str):
@@ -72,7 +96,7 @@ class Task:
                 ) from error
         raise TypeError("due_date must be a date, ISO date string, or None")
 
-    def __str__(self):
+    def __str__(self) -> str:
         due_date = self._due_date.isoformat() if self._due_date else None
         return (
             f"{self._title} (Due: {due_date}, "
