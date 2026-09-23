@@ -1,4 +1,5 @@
 import json
+from datetime import date
 
 import pytest
 
@@ -48,7 +49,7 @@ def test_empty_task_list_has_no_tasks_message(tmp_path):
     task_list = TaskList(tmp_path / "tasks.json")
 
     assert task_list.tasks == []
-    assert str(task_list) == "No tasks available."
+    assert task_list.to_str() == "No tasks available."
 
 
 def test_task_list_renders_tasks_in_order(tmp_path):
@@ -56,10 +57,27 @@ def test_task_list_renders_tasks_in_order(tmp_path):
     task_list.add_task(Task("First task"))
     task_list.add_task(Task("Second task"))
 
-    assert str(task_list) == (
+    assert task_list.to_str() == (
         "1. First task (Due: None, Completed: False)\n"
         "2. Second task (Due: None, Completed: False)"
     )
+
+
+def test_task_list_renders_tasks_matching_filter(tmp_path):
+    task_list = TaskList(tmp_path / "tasks.json")
+    task_list.add_task(Task("Due task", "2026-09-22"))
+    task_list.add_task(Task("Later task", "2026-09-30"))
+
+    assert task_list.to_str(
+        lambda task: task.due_date == date(2026, 9, 22)
+    ) == "1. Due task (Due: 2026-09-22, Completed: False)"
+
+
+def test_task_list_string_conversion_uses_default_rendering(tmp_path):
+    task_list = TaskList(tmp_path / "tasks.json")
+    task_list.add_task(Task("First task"))
+
+    assert str(task_list) == task_list.to_str()
 
 
 def test_get_tasks_accepts_valid_task_number(tmp_path):

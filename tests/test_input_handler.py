@@ -1,3 +1,4 @@
+from datetime import date, timedelta
 from unittest.mock import Mock
 
 import pytest
@@ -312,3 +313,41 @@ def test_input_handler_does_not_add_task_for_invalid_creation_input(
     input_handler.create()
 
     input_handler.task_list.add_task.assert_not_called()
+
+
+def test_read_prints_all_tasks(input_handler, monkeypatch, capsys):
+    input_handler.task_list.to_str.return_value = "1. First task"
+    monkeypatch.setattr("builtins.input", lambda _: "a")
+
+    input_handler.read()
+
+    assert capsys.readouterr().out == (
+        "Current tasks:\n1. First task\n"
+    )
+    input_handler.task_list.to_str.assert_called_once_with()
+
+
+def test_read_prints_tasks_due_today(input_handler, monkeypatch, capsys):
+    input_handler.task_list.to_str.return_value = "1. Due task"
+    monkeypatch.setattr("builtins.input", lambda _: "d")
+
+    input_handler.read()
+
+    assert capsys.readouterr().out == (
+        f"Tasks due {date.today().isoformat()}:\n1. Due task\n"
+    )
+    filter_func = input_handler.task_list.to_str.call_args.args[0]
+    assert filter_func(Mock(due_date=date.today())) is True
+    tomorrow = date.today() + timedelta(days=1)
+    assert filter_func(Mock(due_date=tomorrow)) is False
+
+
+@pytest.mark.parametrize("view_choice", ["", "x"])
+def test_read_rejects_invalid_view(input_handler, monkeypatch, capsys,
+                                   view_choice):
+    monkeypatch.setattr("builtins.input", lambda _: view_choice)
+
+    input_handler.read()
+
+    assert "Error printing tasks:" in capsys.readouterr().out
+    input_handler.task_list.to_str.assert_not_called()

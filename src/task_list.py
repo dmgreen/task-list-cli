@@ -1,7 +1,7 @@
 import json
 from datetime import date
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Union, cast
+from typing import Any, Callable, Dict, List, Optional, Union, cast
 
 from platformdirs import user_data_dir
 
@@ -103,9 +103,18 @@ class TaskList:
         task = self.get_task(task_number)
         self._tasks.remove(task)
 
-    def __str__(self) -> str:
-        if len(self._tasks) == 0:
+    def to_str(
+            self,
+            filter_func: Optional[Callable[[Task], bool]] = None) -> str:
+        output = self._tasks
+        if filter_func is not None:
+            output = list(filter(filter_func, output))
+
+        if len(output) == 0:
             return "No tasks available."
         return "\n".join([
-            f"{i+1}. {task}" for i, task in enumerate(self._tasks)
+            f"{i+1}. {task}" for i, task in enumerate(output)
         ])
+
+    def __str__(self) -> str:
+        return self.to_str()

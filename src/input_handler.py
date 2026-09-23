@@ -1,3 +1,4 @@
+from datetime import date
 from typing import TYPE_CHECKING, Optional
 
 import task
@@ -68,9 +69,26 @@ class InputHandler:
         self.task_list.add_task(new_task)
 
     def read(self) -> None:
-        # TODO: remove this as a user option. Display tasks after each action.
-        print("Current tasks:")
-        print(self.task_list)
+        try:
+            view_choice = input(
+                "Print [A]ll tasks, or [D]ue Today: "
+            ).strip().upper()
+
+            if len(view_choice) == 0:
+                raise ValueError("must select a view")
+
+            if view_choice.startswith("A"):
+                print("Current tasks:")
+                print(self.task_list.to_str())
+            elif view_choice.startswith("D"):
+                today = date.today()
+                print(f"Tasks due {today.isoformat()}:")
+                print(self.task_list.to_str(
+                    lambda task: task.due_date == today))
+            else:
+                raise ValueError("invalid view choice")
+        except ValueError as e:
+            print(f"Error printing tasks: {e}")
 
     def update(self) -> None:
         if not self.task_list.tasks:
