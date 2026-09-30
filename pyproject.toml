@@ -24,10 +24,8 @@ dev = [
 task-list = "task_list_cli:main"
 
 [tool.setuptools]
-py-modules = ["task_list_cli"]
-
-[tool.setuptools.packages.find]
-where = ["src"]
+package-dir = {"" = "src"}
+py-modules = ["input_handler", "task", "task_list", "task_list_cli"]
 
 [tool.ruff]
 target-version = "py39"
