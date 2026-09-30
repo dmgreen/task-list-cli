@@ -1,5 +1,6 @@
 from datetime import date
 from typing import Optional, Union, overload
+from uuid import UUID, uuid4
 
 _UNSET = object()
 
@@ -10,7 +11,9 @@ class Task:
         title: Optional[str] = None,
         due_date: Optional[Union[date, str]] = None,
         completed: bool = False,
+        task_id: Optional[str] = None,
     ) -> None:
+        self._id = self._normalize_id(task_id)
         self._title = self._normalize_title(title)
         self._due_date = self._normalize_due_date(due_date)
         self.completed = completed
@@ -50,6 +53,10 @@ class Task:
     def title(self) -> str:
         return self._title
 
+    @property
+    def id(self) -> str:
+        return self._id
+
     @title.setter
     def title(self, title: Optional[str]) -> None:
         self._title = self._normalize_title(title)
@@ -80,6 +87,17 @@ class Task:
         if not title:
             raise ValueError("Task title is required")
         return title
+
+    @staticmethod
+    def _normalize_id(task_id: Optional[str]) -> str:
+        if task_id is None:
+            return str(uuid4())
+        if not isinstance(task_id, str):
+            raise TypeError("task id must be a string")
+        try:
+            return str(UUID(task_id))
+        except ValueError as error:
+            raise ValueError("task id must be a valid UUID") from error
 
     @staticmethod
     def _normalize_due_date(

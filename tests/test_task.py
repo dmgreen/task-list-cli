@@ -1,4 +1,5 @@
 from datetime import date
+from uuid import UUID
 
 import pytest
 
@@ -17,6 +18,16 @@ def test_task_defaults_metadata():
 
     assert task.due_date is None
     assert task.completed is False
+
+
+def test_task_has_stable_uuid_identity():
+    task = Task("Write tests")
+    restored_task = Task("Write tests", task_id=task.id)
+
+    assert str(UUID(task.id)) == task.id
+    assert restored_task.id == task.id
+    with pytest.raises(AttributeError):
+        task.id = str(UUID(int=0))
 
 
 def test_task_stores_and_updates_metadata():

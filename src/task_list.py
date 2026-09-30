@@ -50,6 +50,9 @@ class TaskList:
             self._tasks = [
                 self._task_from_record(record) for record in records
             ]
+            task_ids = [task.id for task in self._tasks]
+            if len(task_ids) != len(set(task_ids)):
+                raise ValueError("task IDs must be unique")
         except (TypeError, ValueError, KeyError) as error:
             raise TaskFileError(f"invalid task record: {error}") from error
         self.sort()
@@ -59,11 +62,16 @@ class TaskList:
         if not isinstance(record, dict):
             raise TypeError("each task must be a JSON object")
         record = cast(Dict[str, Any], record)
-        if set(record) != {"title", "due_date", "completed"}:
+        legacy_fields = {"title", "due_date", "completed"}
+        if set(record) not in (legacy_fields, legacy_fields | {"id"}):
             raise ValueError(
-                "each task must contain title, due_date, and completed"
+                "each task must contain title, due_date, and completed, "
+                "and may contain id"
             )
-        return Task(**record)
+        values = dict(record)
+        if "id" in values:
+            values["task_id"] = values.pop("id")
+        return Task(**values)
 
     def save(self) -> None:
         if not self.file_path.exists() and not self._tasks:
@@ -71,6 +79,7 @@ class TaskList:
 
         records = [
             {
+                "id": task.id,
                 "title": task.title,
                 "due_date": (
                     task.due_date.isoformat() if task.due_date else None
@@ -102,6 +111,15 @@ class TaskList:
     def delete_task(self, task_number: int) -> None:
         task = self.get_task(task_number)
         self._tasks.remove(task)
+
+    def get_task_by_id(self, task_id: str) -> Task:
+        for task in self._tasks:
+            if task.id == task_id:
+                return task
+        raise KeyError(f"task {task_id} was not found")
+
+    def delete_task_by_id(self, task_id: str) -> None:
+        self._tasks.remove(self.get_task_by_id(task_id))
 
     def to_str(
             self,

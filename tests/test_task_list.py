@@ -148,8 +148,18 @@ def test_task_list_round_trips_tasks_as_json(tmp_path):
         ("Open task", None, False),
     ]
     assert json.loads(file_path.read_text()) == [
-        {"title": "Due task", "due_date": "2026-09-30", "completed": True},
-        {"title": "Open task", "due_date": None, "completed": False},
+        {
+            "id": task_list.tasks[0].id,
+            "title": "Due task",
+            "due_date": "2026-09-30",
+            "completed": True,
+        },
+        {
+            "id": task_list.tasks[1].id,
+            "title": "Open task",
+            "due_date": None,
+            "completed": False,
+        },
     ]
 
 
@@ -194,8 +204,40 @@ def test_save_creates_missing_file_when_tasks_exist(tmp_path):
     task_list.save()
 
     assert json.loads(file_path.read_text()) == [
-        {"title": "First task", "due_date": None, "completed": False},
+        {
+            "id": task_list.tasks[0].id,
+            "title": "First task",
+            "due_date": None,
+            "completed": False,
+        },
     ]
+
+
+def test_legacy_records_receive_ids_and_save_them(tmp_path):
+    file_path = tmp_path / "tasks.json"
+    file_path.write_text(
+        '[{"title":"Old task","due_date":null,"completed":false}]'
+    )
+
+    task_list = TaskList(file_path)
+    task_id = task_list.tasks[0].id
+
+    assert task_id
+    assert "id" not in json.loads(file_path.read_text())[0]
+    task_list.save()
+    assert json.loads(file_path.read_text())[0]["id"] == task_id
+
+
+def test_task_list_can_find_and_delete_tasks_by_id(tmp_path):
+    task_list = TaskList(tmp_path / "tasks.json")
+    task = Task("Find me")
+    task_list.add_task(task)
+
+    assert task_list.get_task_by_id(task.id) is task
+    task_list.delete_task_by_id(task.id)
+
+    with pytest.raises(KeyError):
+        task_list.get_task_by_id(task.id)
 
 
 def test_save_preserves_existing_empty_task_file(tmp_path):

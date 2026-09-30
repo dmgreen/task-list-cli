@@ -10,13 +10,12 @@ def test_main_saves_tasks_on_quit(tmp_path, monkeypatch):
 
     assert main(["main.py", str(file_path)]) == 0
 
-    assert json.loads(file_path.read_text()) == [
-        {
-            "title": "Write tests",
-            "due_date": "2026-09-30",
-            "completed": False,
-        }
-    ]
+    output = json.loads(file_path.read_text())[0]
+
+    assert output["id"] is not None
+    assert output["title"] == "Write tests"
+    assert output["due_date"] == "2026-09-30"
+    assert output["completed"] is False
 
 
 def test_main_returns_error_for_bad_task_file(tmp_path, monkeypatch, capsys):
